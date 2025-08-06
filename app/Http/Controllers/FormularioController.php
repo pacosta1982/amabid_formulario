@@ -19,6 +19,17 @@ class FormularioController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'datos.postulante.nombre' => 'required|string|max:255',
+            'datos.postulante.ci' => 'required|string|max:255|unique:formulario_inscripcion,postulante_ci',
+            'datos.postulante.fechaNacimiento' => 'required|date',
+            'datos.postulante.estadoCivil' => 'required|string|max:100',
+            'datos.postulante.edad' => 'required|integer|min:1',
+            'datos.postulante.nacionalidad' => 'required|string|max:100',
+            'datos.postulante.escolaridad' => 'required|string|max:100',
+            'datos.postulante.telefono' => 'required|string|max:50',
+            'datos.postulante.email' => 'required|email|max:255|unique:formulario_inscripcion,postulante_email',
+            // demás campos no obligatorios
+            // el resto no obligatorios
             'datos' => ['required','array'],
             'familia' => ['nullable','array'],
         ]);
@@ -38,6 +49,8 @@ class FormularioController extends Controller
                 'postulante_telefono' => $d['postulante']['telefono'] ?? null,
                 'postulante_contacto_alternativo' => $d['postulante']['contactoAlternativo'] ?? null,
                 'postulante_email' => $d['postulante']['email'] ?? null,
+
+
                 'postulante_profesion' => $d['postulante']['profesion'] ?? null,
                 'postulante_actividad' => $d['postulante']['actividad'] ?? null,
                 'postulante_ingreso' => $d['postulante']['ingreso'] ?? null,

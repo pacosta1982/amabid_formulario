@@ -12,11 +12,56 @@ import SaludTab from '@/components/SaludTab';
 import IdentidadTab from '@/components/IdentidadTab';
 import DocumentosTab from '@/components/DocumentosTab';
 import MejorasTab from '@/components/MejorasTab';
+import AlertMessage from '@/components/AlertMessage';
 
 export default function Formulario() {
   const [active, setActive] = useState('postulante');
 
-  const [datos, setDatos] = useState<any>({
+  const datosIniciales = {
+  postulante: {
+    nombre: '',
+    ci: '',
+    fechaNacimiento: '',
+    estadoCivil: '',
+    edad: '',
+    nacionalidad: '',
+    escolaridad: '',
+    telefono: '',
+    contactoAlternativo: '',
+    email: '',
+    profesion: '',
+    actividad: '',
+    ingreso: '',
+    rucActivo: false,
+  },
+  pareja: {
+    nombre: '',
+    ci: '',
+    fechaNacimiento: '',
+    estadoCivil: '',
+    edad: '',
+    nacionalidad: '',
+    escolaridad: '',
+    telefono: '',
+    email: '',
+    profesion: '',
+    actividad: '',
+    ingreso: '',
+    rucActivo: false,
+    subsidioAnterior: false,
+  },
+  inmueble: { tituloPropiedad:'', comprobantePago:'', otroDocumento:'', conexionANDE:'', fincaMatricula:'', direccion:'', barrio:'', municipio:'', padron:'', subsidioAnterior:'' },
+  compromiso: { habilitaAhorro:'', asociacionCooperativa:'' },
+  salud: { discapacidad:false, tipoDiscapacidad:'', embarazo:false, gestacion:'', enfermedad:false, enfermedadDescripcion:'', responsableCuidados:false, afectaActividades:false },
+  identidad: { grupoEtnico:'', grupoEtnicoOtro:'', genero:'', generoOtro:'' },
+  documentos: { cedula:false, tituloPropiedad:false, comprobanteIngreso:false, documentosSociales:false },
+  mejoras: '', observaciones: '',
+  // ... también los demás bloques como inmueble, compromiso, salud, etc.
+};
+
+const [datos, setDatos] = useState(datosIniciales);
+
+  /*const [datos, setDatos] = useState<any>({
     postulante: { nombre:'', ci:'', fechaNacimiento:'', estadoCivil:'', edad:'', nacionalidad:'', escolaridad:'', telefono:'', contactoAlternativo:'', email:'', profesion:'', actividad:'', ingreso:'', rucActivo:false },
     pareja: { nombre:'', ci:'', fechaNacimiento:'', estadoCivil:'', edad:'', nacionalidad:'', escolaridad:'', telefono:'', email:'', profesion:'', actividad:'', ingreso:'', rucActivo:false, subsidioAnterior:false },
     inmueble: { tituloPropiedad:'', comprobantePago:'', otroDocumento:'', conexionANDE:'', fincaMatricula:'', direccion:'', barrio:'', municipio:'', padron:'', subsidioAnterior:'' },
@@ -25,9 +70,10 @@ export default function Formulario() {
     identidad: { grupoEtnico:'', grupoEtnicoOtro:'', genero:'', generoOtro:'' },
     documentos: { cedula:false, tituloPropiedad:false, comprobanteIngreso:false, documentosSociales:false },
     mejoras: '', observaciones: '',
-  });
+  });*/
 
   const [familia, setFamilia] = useState<any[]>([]);
+  const [alert, setAlert] = useState<{ type: string, message: string } | null>(null);
 
   const handleChange = (seccion: string, campo: string|null, valor: any) => {
     if (campo === null) {
@@ -49,16 +95,28 @@ export default function Formulario() {
   const eliminarIntegrante = (i: number) => setFamilia(familia.filter((_, idx) => idx !== i));
 
   const handleSubmit = async () => {
-    try {
-      await axios.post(route('formulario.store'), { datos, familia });
-      alert('Formulario enviado correctamente');
-      // Si querés, reseteá:
-      // window.location.reload();
-    } catch (e) {
-      console.error(e);
-      alert('Ocurrió un error al guardar');
-    }
-  };
+  // Validación básica en frontend
+  const p = datos.postulante;
+  if (!p.nombre || !p.ci || !p.fechaNacimiento || !p.estadoCivil || !p.edad || !p.nacionalidad || !p.escolaridad || !p.telefono || !p.email) {
+    setAlert({ type: 'error', message: 'Por favor complete todos los campos obligatorios del Postulante.' });
+    return;
+  }
+
+ try {
+  await axios.post(route('formulario.store'), { datos, familia });
+  setAlert({ type: 'success', message: 'Formulario enviado correctamente.' });
+  setDatos(datosIniciales);
+  setFamilia([]);
+
+} catch (error: any) {
+  if (error.response && error.response.status === 422) {
+    const firstError = Object.values(error.response.data.errors)[0] as string[];
+    setAlert({ type: 'error', message: firstError[0] });
+  } else {
+    setAlert({ type: 'error', message: 'Ocurrió un error al guardar.' });
+  }
+}
+};
 
   const tabs = [
     { key:'postulante', label:'Postulante', content: <PostulanteTab datos={datos} handleChange={handleChange}/> },
@@ -84,6 +142,14 @@ export default function Formulario() {
       <Head title="Formulario de Inscripción" />
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold text-blue-600 mb-4">Formulario de Inscripción</h1>
+
+        {alert && (
+  <AlertMessage
+    type={alert.type as any}
+    message={alert.message}
+    onClose={() => setAlert(null)}
+  />
+)}
 
         {/* Tabs Bootstrap-like simples con Tailwind (o reemplazá por nav-tabs si usás Bootstrap) */}
         <div className="flex flex-wrap gap-3 mb-4">
