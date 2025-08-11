@@ -129,4 +129,20 @@ class FormularioController extends Controller
             return response()->json(['ok' => true, 'id' => $form->id]);
         });
     }
+
+    public function showScoring(int $id)
+{
+    // Opcional: validá que exista
+    $form = FormularioInscripcion::findOrFail($id);
+
+    return Inertia::render('scoring/Evaluar', [
+        'formularioId' => $form->id,
+        // Podés enviar datos del postulante para cabecera si querés:
+        'postulante' => [
+            'nombre' => $form->postulante_nombre,
+            'ci'     => $form->postulante_ci,
+            'email'  => $form->postulante_email,
+        ],
+    ]);
+}
 }

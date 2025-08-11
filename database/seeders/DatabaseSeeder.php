@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
         FormularioInscripcionSeeder::class,
         GrupoFamiliarSeeder::class,
     ]);
+
+    $this->call([
+        ScoringSeeder::class,
+    ]);
         /*User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
