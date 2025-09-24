@@ -16,6 +16,8 @@ import AlertMessage from '@/components/AlertMessage';
 
 export default function Formulario() {
   const [active, setActive] = useState('postulante');
+  const MAX_INGRESO = 10000000; // ₲10.000.000
+
 
   const datosIniciales = {
   postulante: {
@@ -131,7 +133,7 @@ const [datos, setDatos] = useState(datosIniciales);
           eliminarIntegrante={eliminarIntegrante}
         />
     },
-    { key:'salud', label:'Salud', content: <SaludTab datos={datos.salud} handleChange={handleChange}/> },
+    /*{ key:'salud', label:'Salud', content: <SaludTab datos={datos.salud} handleChange={handleChange}/> },*/
     { key:'identidad', label:'Identidad', content: <IdentidadTab datos={datos.identidad} handleChange={handleChange}/> },
     { key:'documentos', label:'Documentos', content: <DocumentosTab datos={datos.documentos} handleChange={handleChange}/> },
     { key:'mejoras', label:'Mejoras y Observaciones', content: <MejorasTab datos={datos} handleChange={handleChange}/> },
@@ -141,7 +143,7 @@ const [datos, setDatos] = useState(datosIniciales);
     <>
       <Head title="Formulario de Inscripción" />
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold text-blue-600 mb-4">Formulario de Inscripción</h1>
+        <h2 className="text-3xl font-bold text-blue-600 mb-4 text-center" >Formulario de Inscripción</h2>
 
         {alert && (
   <AlertMessage

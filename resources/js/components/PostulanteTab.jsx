@@ -132,7 +132,7 @@ const PostulanteTab = ({ datos, handleChange }) => {
           <input
             type="number"
             className="form-control"
-            placeholder="Ingreso mensual (Gs)"
+            placeholder="Ingreso mensual (Gs) Maximo 5.000.000"
             value={datos.postulante.ingreso}
             onChange={(e) => handleChange("postulante", "ingreso", e.target.value)}
           />

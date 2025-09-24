@@ -45,6 +45,9 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        <div class="banner-header">
+            <img src="/images/muv-banner.png" alt="Banner" />
+        </div>
         @inertia
     </body>
 </html>
