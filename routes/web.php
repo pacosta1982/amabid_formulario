@@ -5,7 +5,14 @@ use Inertia\Inertia;
 use App\Http\Controllers\FormularioController;
 use App\Http\Controllers\FormularioBackendController;
 use App\Http\Controllers\ScoreController;
+use App\Http\Controllers\ScoringConfigController;
+use App\Http\Controllers\GrupoFamiliarController;
 
+
+Route::get('/scoring-config', [ScoringConfigController::class, 'index']);
+Route::post('/scoring-config/update', [ScoringConfigController::class, 'update']);
+Route::get('/formulario/{id}', [FormularioController::class, 'show']);
+Route::get('/grupo-familiar/{id}', [GrupoFamiliarController::class, 'show']);
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -15,6 +22,12 @@ Route::middleware(['auth','verified'])->group(function () {
     Route::get('/postulantes', [FormularioBackendController::class, 'index'])->name('postulantes.index');
     Route::get('/postulantes/{id}', [FormularioBackendController::class, 'show'])->name('postulantes.show');
     Route::get('/postulantes/{id}/scoring', [FormularioBackendController::class, 'showScoring'])->name('postulantes.scoring'); // ya lo tenés
+});
+
+Route::middleware(['auth','verified'])->group(function () {
+    Route::get('/configuracion', [ScoringConfigController::class, 'show']);
+    //Route::get('/postulantes/{id}', [FormularioBackendController::class, 'show'])->name('postulantes.show');
+    //Route::get('/postulantes/{id}/scoring', [FormularioBackendController::class, 'showScoring'])->name('postulantes.scoring'); // ya lo tenés
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

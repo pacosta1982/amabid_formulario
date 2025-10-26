@@ -16,6 +16,12 @@ class FormularioController extends Controller
         return Inertia::render('formulario/Formulario');
     }
 
+    public function show($id)
+    {
+        $postulante = FormularioInscripcion::findOrFail($id);
+        return response()->json($postulante);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

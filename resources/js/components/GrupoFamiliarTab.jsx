@@ -62,6 +62,28 @@ const GrupoFamiliarTab = ({ familia, handleFamiliaChange, agregarIntegrante, eli
                 </Button>
               </Col>
             </Row>
+            {/* Discapacidad */}
+                    <Row className="mb-2">
+                      <Col>
+                        <Form.Check
+                          type="checkbox"
+                          label="¿Es una persona con discapacidad?"
+                          checked={persona.discapacidad}
+                          onChange={(e) => handleFamiliaChange(index, "discapacidad", e.target.checked)}
+                        />
+                      </Col>
+                    </Row>
+                    {persona.discapacidad && (
+                      <Row className="mb-2">
+                        <Col md={6}>
+                          <Form.Control
+                            placeholder="Tipo de discapacidad (motora, sensorial, mental)"
+                            value={persona.tipoDiscapacidad}
+                            onChange={(e) => handleFamiliaChange(index, "tipoDiscapacidad", e.target.value)}
+                          />
+                        </Col>
+                      </Row>
+                    )}
           </div>
         ))}
         <Button variant="primary" onClick={agregarIntegrante}>

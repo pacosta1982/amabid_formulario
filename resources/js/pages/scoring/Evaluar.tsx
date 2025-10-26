@@ -1,291 +1,155 @@
-// resources/js/pages/scoring/Evaluar.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import AlertMessage from '@/components/AlertMessage';
+//import { ScoringConfig } from './types';
+import { ScoringConfig, Formulario, IntegranteFamiliar } from './types';
+import { Head, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 
-type SharedData = {
-  formularioId?: number; // lo podés pasar desde el controlador Inertia
-};
-
-type Category = {
-  id: number;
-  code: string;
-  name: string;
-  sort_order: number;
-};
-
-type Criterion = {
-  id: number;
-  category_id: number;
-  code: string | null;
-  name: string;
-  input_type: 'select' | 'boolean' | 'number';
-  source_field?: string | null;
-  sort_order: number;
-};
-
-type Option = {
-  id: number;
-  criterion_id: number;
-  label: string;
-  points: number;
-  sort_order: number;
-};
-
-type Range = {
-  id: number;
-  criterion_id: number;
-  min_value: number | null;
-  max_value: number | null;
-  points: number;
-  sort_order: number;
-};
-
-type Answers = Record<
-  number, // criterion_id
-  { option_id?: number; numeric_value?: number }
->;
 
 export default function Evaluar() {
-  const { props } = usePage<{ auth?: any } & SharedData>();
-  const formularioId = props.formularioId as number; // asegurate de pasarlo desde Laravel
+  const [config, setConfig] = useState<ScoringConfig | null>(null);
+  const [formulario, setFormulario] = useState<Formulario | null>(null);
+  const [grupoFamiliar, setGrupoFamiliar] = useState<IntegranteFamiliar[]>([]);
+  //const { props } = usePage();
 
-  const [loading, setLoading] = useState(true);
-  const [schemaLoading, setSchemaLoading] = useState(true);
-  const [alert, setAlert] = useState<{ type: 'success' | 'error' | 'info' | 'warning'; message: string } | null>(null);
+  type Familiar = {
+  id: number;
+  nombre: string;
+  ci: string;
+  edad: number;
+  parentesco: string;
+  escolaridad: string;
+  ocupacion: string;
+};
 
-  const [cats, setCats] = useState<Category[]>([]);
-  const [criteria, setCriteria] = useState<Criterion[]>([]);
-  const [options, setOptions] = useState<Record<number, Option[]>>({});
-  const [ranges, setRanges] = useState<Record<number, Range[]>>({});
-
-  const [answers, setAnswers] = useState<Answers>({});
-  const [totals, setTotals] = useState<{ per_category: Record<number, { name: string; subtotal: number }>; total: number } | null>(null);
-
-  const routeUrl = (name: string, param?: number | string) => {
-    // Si tenés ziggy/route helper, usalo. Si no, fallback plano:
-    try {
-      // @ts-ignore
-      if (typeof route === 'function') return param !== undefined ? route(name, param) : route(name);
-    } catch (_) {}
-    switch (name) {
-      case 'scoring.schema':
-        return '/scoring/schema';
-      case 'scoring.evaluate':
-        return `/scoring/evaluate/${param}`;
-      case 'scoring.current':
-        return `/scoring/current/${param}`;
-      default:
-        return '/';
-    }
+  type PageProps = {
+  formulario: {
+    id: number;
+    created_at: string;
+    postulante: Bloque;
+    pareja: Bloque;
+    inmueble: Bloque;
+    compromiso: Bloque;
+    salud: Bloque;
+    identidad: Bloque;
+    documentos: Bloque;
+    mejoras: string | null;
+    observaciones: string | null;
+    familia: Familiar[];
   };
+};
 
-  // Cargar esquema de scoring
+
+  const { props } = usePage<PageProps>();
+  const formularioId = props.formularioId;
+  const f = props.formulario;
+  //const f = props.formulario;
+
+  const [puntaje, setPuntaje] = useState(0);
+  const [fid, setFormId] = useState(0);
+  //const [config, setConfig] = useState<ScoringConfig | null>(null);
+
+  type Bloque = Record<string, any>;
+
+
+  const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <div className="bg-white border rounded p-4">
+      <h3 className="text-lg font-semibold mb-3">{title}</h3>
+      {children}
+    </div>
+  );
+
+  const GridBlock: React.FC<{ data: Bloque }> = ({ data }) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {Object.entries(data).map(([k, v]) => (
+        <div key={k} className="text-sm">
+          <div className="text-gray-500">{k}</div>
+          <div className="font-medium">{String(v ?? '')}</div>
+        </div>
+      ))}
+    </div>
+  );
+
   useEffect(() => {
-    let mounted = true;
-    const fetchSchema = async () => {
-      setSchemaLoading(true);
-      try {
-        const { data } = await axios.get(routeUrl('scoring.schema'));
-        if (!mounted) return;
+    //console.log('piter');
+    //axios.get('/formulario/22').then(res => setFormulario(res.data));
+    axios.get(`/formulario/${formularioId}`).then(res => {
+    //console.log('Formulario recibido:', res.data); // 👈
+    setFormulario(res.data);
+    });
+    axios.get(`/grupo-familiar/${formularioId}`).then(res => setGrupoFamiliar(res.data));
+    //axios.get('/scoring-config').then(res => { console.log('Configuracion recibida:', res.data); setConfig(res.data)});
+    axios.get('/scoring-config').then(res => {
+    const data = res.data;
 
-        setCats(data.cats as Category[]);
-        setCriteria(data.criterios as Criterion[]);
-        setOptions(data.options as Record<number, Option[]>);
-        setRanges(data.ranges as Record<number, Range[]>);
-      } catch (e) {
-        setAlert({ type: 'error', message: 'No se pudo cargar el esquema de scoring.' });
-      } finally {
-        setSchemaLoading(false);
-      }
+    const parsed = {
+        configuracion: JSON.parse(data.A1 || '{}'),
+        composicionHogar: JSON.parse(data.A2 || '{}'),
+        edades: JSON.parse(data.A3 || '{}'),
+        discapacidad: JSON.parse(data.B1 || '{}').si || 0
     };
-    fetchSchema();
-    return () => { mounted = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    console.log('Config transformada:', parsed);
+    setConfig(parsed);
+    });
   }, []);
 
-  // Cargar puntuación actual (si existe) para prellenar
-  useEffect(() => {
-    if (!formularioId) return;
-    let mounted = true;
-    const loadCurrent = async () => {
-      setLoading(true);
-      try {
-        const { data } = await axios.get(routeUrl('scoring.current', formularioId));
-        if (!mounted) return;
-        // Reconstruir respuestas desde detalle existente
-        const a: Answers = {};
-        (data.detail as any[]).forEach((row) => {
-          a[row.criterion_id] = {};
-          if (row.option_id) a[row.criterion_id].option_id = row.option_id;
-          if (row.numeric_value !== null && row.numeric_value !== undefined) a[row.criterion_id].numeric_value = Number(row.numeric_value);
-        });
-        setAnswers(a);
-        if (typeof data.total === 'number') {
-          // No tenemos per_category acá, solo total; se actualizará al guardar.
-          setTotals((prev) => prev ?? { per_category: {}, total: data.total });
-        }
-      } catch {
-        // silencio: puede no haber evaluación previa
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCurrent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formularioId]);
+useEffect(() => {
+  if (!formulario || !grupoFamiliar || !config) return;
+    console.log(formulario.postulante_nombre);
+    //console.log(formulario.postulante.postulante_nombre);
 
-  const criteriaByCategory = useMemo(() => {
-    const map: Record<number, Criterion[]> = {};
-    criteria.forEach((c) => {
-      if (!map[c.category_id]) map[c.category_id] = [];
-      map[c.category_id].push(c);
-    });
-    // ordenar por sort_order
-    Object.keys(map).forEach((k) => map[Number(k)].sort((a, b) => a.sort_order - b.sort_order));
-    return map;
-  }, [criteria]);
+  let total = 0;
+  //console.log(config.configuracion[formulario.configuracion]);
+  //console.log('formulario.configuracion:', formulario.configuracion);
+  //console.log('config.configuracion:', formulario.configuracion);
 
-  const onSelectChange = (criterionId: number, optionId: number) => {
-    setAnswers((prev) => ({ ...prev, [criterionId]: { option_id: optionId } }));
-  };
+  total += config.configuracion[formulario.configuracion] || 1;
+console.log(total);
 
-  const onNumberChange = (criterionId: number, val: string) => {
-    const n = val === '' ? undefined : Number(val);
-    setAnswers((prev) => ({ ...prev, [criterionId]: { numeric_value: n } }));
-  };
+  //console.log(grupoFamiliar.length + 1);
 
-  const save = async () => {
-    if (!formularioId) {
-      setAlert({ type: 'error', message: 'Falta el identificador del formulario.' });
-      return;
-    }
-    try {
-      const { data } = await axios.post(routeUrl('scoring.evaluate', formularioId), { answers });
-      setTotals(data);
-      setAlert({ type: 'success', message: 'Scoring guardado correctamente.' });
-    } catch (e: any) {
-      let msg = 'No se pudo guardar el scoring.';
-      if (e?.response?.data?.message) msg = e.response.data.message;
-      setAlert({ type: 'error', message: msg });
-    }
-  };
+
+  const integrantes = grupoFamiliar.length + 1;
+  if (integrantes >= 7) total += config.composicionHogar['7+'];
+  else if (integrantes >= 5) total += config.composicionHogar['5-6'];
+  else if (integrantes >= 3) total += config.composicionHogar['3-4'];
+  else total += config.composicionHogar['2-2'];
+
+  //console.log(formularioId);
+
+console.log(total);
+  const menores = grupoFamiliar.filter(p => p.edad < 6).length;
+  if (menores >= 6) total += config.edades['6+'];
+  else if (menores >= 4) total += config.edades['4-5'];
+  else if (menores >= 2) total += config.edades['2-3'];
+  else total += config.edades['1'];
+
+  const conDiscapacidad = grupoFamiliar.filter(p => p.discapacidad).length;
+  if (conDiscapacidad > 0) total += config.discapacidad;
+
+  setPuntaje(total);
+}, [formulario, grupoFamiliar, config]);
+
 
   return (
     <>
       <AppLayout>
-      <Head title="Evaluación de Scoring" />
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold text-blue-600 mb-4">Evaluación de Scoring</h1>
-
-        {alert && (
-          <AlertMessage type={alert.type} message={alert.message} onClose={() => setAlert(null)} />
-        )}
-
-        {(schemaLoading || loading) && (
-          <div className="mb-4 p-3 border rounded bg-white">Cargando…</div>
-        )}
-
-        {!schemaLoading && cats.length === 0 && (
-          <div className="mb-4 p-3 border rounded bg-white">
-            No hay criterios configurados. Cargá el esquema primero.
-          </div>
-        )}
-
-        {!schemaLoading && cats.length > 0 && (
-          <>
-            {cats.sort((a, b) => a.sort_order - b.sort_order).map((cat) => (
-              <div key={cat.id} className="mb-6">
-                <h2 className="text-xl font-semibold mb-3">
-                  {cat.code}. {cat.name}
-                </h2>
-
-                <div className="bg-white border rounded">
-                  {(criteriaByCategory[cat.id] ?? []).map((crit) => (
-                    <div key={crit.id} className="p-3 border-b last:border-b-0">
-                      <div className="mb-2 font-medium">
-                        {crit.code ? `${crit.code}. ` : ''}{crit.name}
+       <Head title="Evaluación de Scoring" />
+        <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-between mb-4">
+                      <h1 className="text-2xl font-bold text-blue-600">Postulante #  </h1>
+                      <div className="flex gap-2">
+                        <Link href={route('postulantes.index')} className="px-3 py-2 rounded border text-blue-700 border-blue-600 hover:bg-blue-50">
+                          Volver al listado
+                        </Link>
                       </div>
-
-                      {crit.input_type === 'select' || crit.input_type === 'boolean' ? (
-                        <select
-                          className="w-full border rounded px-3 py-2"
-                          value={answers[crit.id]?.option_id ?? ''}
-                          onChange={(e) => onSelectChange(crit.id, Number(e.target.value))}
-                        >
-                          <option value="">Seleccione…</option>
-                          {(options[crit.id] ?? [])
-                            .sort((a, b) => a.sort_order - b.sort_order)
-                            .map((opt) => (
-                              <option key={opt.id} value={opt.id}>
-                                {opt.label} ( {opt.points} pts )
-                              </option>
-                            ))}
-                        </select>
-                      ) : null}
-
-                      {crit.input_type === 'number' ? (
-                        <div className="flex gap-3">
-                          <input
-                            type="number"
-                            className="w-40 border rounded px-3 py-2"
-                            placeholder="Valor…"
-                            value={answers[crit.id]?.numeric_value ?? ''}
-                            onChange={(e) => onNumberChange(crit.id, e.target.value)}
-                          />
-                          <div className="text-sm text-gray-600 self-center">
-                            {((ranges[crit.id] ?? []).length > 0) && (
-                              <span>
-                                Rango →{' '}
-                                {(ranges[crit.id] ?? [])
-                                  .sort((a, b) => a.sort_order - b.sort_order)
-                                  .map((r, i) => (
-                                    <span key={r.id}>
-                                      {r.min_value ?? '–'}–{r.max_value ?? '∞'}: <b>{r.points}</b> pts{ i < (ranges[crit.id].length - 1) ? ', ' : '' }
-                                    </span>
-                                  ))}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ) : null}
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Totales */}
-            <div className="bg-white border rounded p-4 mb-4">
-              <h3 className="text-lg font-semibold mb-3">Totales</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {totals && Object.entries(totals.per_category || {}).map(([catId, obj]) => (
-                  <div key={catId} className="border rounded p-3">
-                    <div className="font-medium">{obj.name}</div>
-                    <div className="text-2xl">{obj.subtotal} pts</div>
-                  </div>
-                ))}
-                <div className="border rounded p-3 md:col-span-2">
-                  <div className="font-medium">TOTAL</div>
-                  <div className="text-3xl">{totals?.total ?? 0} pts</div>
-                </div>
-              </div>
+            <div className="container mt-4">
+            <h2>Evaluación de Scoring</h2>
+            <p className="lead">Puntaje total: <strong>{puntaje} pts</strong></p>
             </div>
-
-            <div className="flex gap-3">
-              <button
-                className="px-6 py-3 rounded bg-blue-600 text-white hover:bg-blue-700"
-                onClick={save}
-              >
-                Guardar scoring
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+        </div>
       </AppLayout>
     </>
   );

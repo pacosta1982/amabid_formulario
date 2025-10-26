@@ -18,6 +18,11 @@ const mainNavItems: NavItem[] = [
         href: '/postulantes',
         icon: LayoutList,
     },
+    {
+        title: 'Configuracion',
+        href: '/configuracion',
+        icon: LayoutList,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

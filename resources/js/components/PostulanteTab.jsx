@@ -1,4 +1,5 @@
 import React from "react";
+import { Form, Row, Col } from "react-bootstrap";
 
 const PostulanteTab = ({ datos, handleChange }) => {
   return (
@@ -66,13 +67,17 @@ const PostulanteTab = ({ datos, handleChange }) => {
           />
         </div>
         <div className="col-md-6 mb-3">
-          <input
-            type="text"
+          <select
             className="form-control"
-            placeholder="Escolaridad"
-            value={datos.postulante.escolaridad}
+            value={datos.postulante?.escolaridad || ''}
             onChange={(e) => handleChange("postulante", "escolaridad", e.target.value)}
-          />
+            >
+            <option value="">Seleccione escolaridad</option>
+            <option value="Escolar Basica">Escolar Básica</option>
+            <option value="Secundaria">Secundaria</option>
+            <option value="Universitaria">Universitaria</option>
+            <option value="Ninguna">Ninguna</option>
+          </select>
         </div>
       </div>
 
@@ -152,6 +157,103 @@ const PostulanteTab = ({ datos, handleChange }) => {
           </div>
         </div>
       </div>
+        <div className="p-3 border rounded bg-white">
+              <h5 className="mb-3">4. Salud, Embarazo y Enfermedad</h5>
+              <Form>
+                {/* Discapacidad */}
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Check
+                      type="checkbox"
+                      label="¿Es una persona con discapacidad?"
+                      checked={datos.salud.discapacidad}
+                      onChange={(e) => handleChange("salud", "discapacidad", e.target.checked)}
+                    />
+                  </Col>
+                </Row>
+                {datos.salud.discapacidad && (
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <Form.Control
+                        placeholder="Tipo de discapacidad (motora, sensorial, mental)"
+                        value={datos.salud.tipoDiscapacidad}
+                        onChange={(e) => handleChange("salud", "tipoDiscapacidad", e.target.value)}
+                      />
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Embarazo */}
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Check
+                      type="checkbox"
+                      label="¿Está embarazada?"
+                      checked={datos.salud.embarazo}
+                      onChange={(e) => handleChange("salud", "embarazo", e.target.checked)}
+                    />
+                  </Col>
+                </Row>
+                {datos.salud.embarazo && (
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <Form.Control
+                        placeholder="Tiempo de gestación"
+                        value={datos.salud.gestacion}
+                        onChange={(e) => handleChange("salud", "gestacion", e.target.value)}
+                      />
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Enfermedad */}
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Check
+                      type="checkbox"
+                      label="¿Tiene una enfermedad grave incapacitante?"
+                      checked={datos.salud.enfermedad}
+                      onChange={(e) => handleChange("salud", "enfermedad", e.target.checked)}
+                    />
+                  </Col>
+                </Row>
+                {datos.salud.enfermedad && (
+                  <>
+                    <Row className="mb-2">
+                      <Col md={12}>
+                        <Form.Control
+                          placeholder="Descripción de la enfermedad"
+                          value={datos.salud.enfermedadDescripcion}
+                          onChange={(e) => handleChange("salud", "enfermedadDescripcion", e.target.value)}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row className="mb-2">
+                      <Col>
+                        <Form.Check
+                          type="checkbox"
+                          label="¿Tiene responsable de cuidados?"
+                          checked={datos.salud.responsableCuidados}
+                          onChange={(e) => handleChange("salud", "responsableCuidados", e.target.checked)}
+                        />
+                      </Col>
+                    </Row>
+                    <Row className="mb-2">
+                      <Col>
+                        <Form.Check
+                          type="checkbox"
+                          label="¿Incapacita en actividades productivas o personales?"
+                          checked={datos.salud.afectaActividades}
+                          onChange={(e) => handleChange("salud", "afectaActividades", e.target.checked)}
+                        />
+                      </Col>
+                    </Row>
+                  </>
+                )}
+              </Form>
+            </div>
+
     </fieldset>
   );
 };

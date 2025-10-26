@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
         FormularioInscripcionSeeder::class,
         GrupoFamiliarSeeder::class,
+        ScoringConfigSeeder::class,
     ]);
 
     $this->call([

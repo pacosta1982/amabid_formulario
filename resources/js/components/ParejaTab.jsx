@@ -1,4 +1,5 @@
 import React from "react";
+import { Form, Row, Col } from "react-bootstrap";
 
 const ParejaTab = ({ datos, handleChange }) => {
   return (
@@ -154,6 +155,102 @@ const ParejaTab = ({ datos, handleChange }) => {
           </div>
         </div>
       </div>
+      <div className="p-3 border rounded bg-white">
+              <h5 className="mb-3">4. Salud, Embarazo y Enfermedad</h5>
+              <Form>
+                {/* Discapacidad */}
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Check
+                      type="checkbox"
+                      label="¿Es una persona con discapacidad?"
+                      checked={datos.pareja.discapacidad}
+                      onChange={(e) => handleChange("pareja", "discapacidad", e.target.checked)}
+                    />
+                  </Col>
+                </Row>
+                {datos.pareja.discapacidad && (
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <Form.Control
+                        placeholder="Tipo de discapacidad (motora, sensorial, mental)"
+                        value={datos.pareja.tipoDiscapacidad}
+                        onChange={(e) => handleChange("pareja", "tipoDiscapacidad", e.target.value)}
+                      />
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Embarazo */}
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Check
+                      type="checkbox"
+                      label="¿Está embarazada?"
+                      checked={datos.pareja.embarazo}
+                      onChange={(e) => handleChange("pareja", "embarazo", e.target.checked)}
+                    />
+                  </Col>
+                </Row>
+                {datos.pareja.embarazo && (
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <Form.Control
+                        placeholder="Tiempo de gestación"
+                        value={datos.pareja.gestacion}
+                        onChange={(e) => handleChange("pareja", "gestacion", e.target.value)}
+                      />
+                    </Col>
+                  </Row>
+                )}
+
+                {/* Enfermedad */}
+                <Row className="mb-2">
+                  <Col>
+                    <Form.Check
+                      type="checkbox"
+                      label="¿Tiene una enfermedad grave incapacitante?"
+                      checked={datos.pareja.enfermedad}
+                      onChange={(e) => handleChange("pareja", "enfermedad", e.target.checked)}
+                    />
+                  </Col>
+                </Row>
+                {datos.pareja.enfermedad && (
+                  <>
+                    <Row className="mb-2">
+                      <Col md={12}>
+                        <Form.Control
+                          placeholder="Descripción de la enfermedad"
+                          value={datos.pareja.enfermedadDescripcion}
+                          onChange={(e) => handleChange("pareja", "enfermedadDescripcion", e.target.value)}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row className="mb-2">
+                      <Col>
+                        <Form.Check
+                          type="checkbox"
+                          label="¿Tiene responsable de cuidados?"
+                          checked={datos.pareja.responsableCuidados}
+                          onChange={(e) => handleChange("pareja", "responsableCuidados", e.target.checked)}
+                        />
+                      </Col>
+                    </Row>
+                    <Row className="mb-2">
+                      <Col>
+                        <Form.Check
+                          type="checkbox"
+                          label="¿Incapacita en actividades productivas o personales?"
+                          checked={datos.pareja.afectaActividades}
+                          onChange={(e) => handleChange("pareja", "afectaActividades", e.target.checked)}
+                        />
+                      </Col>
+                    </Row>
+                  </>
+                )}
+              </Form>
+            </div>
     </fieldset>
   );
 };
