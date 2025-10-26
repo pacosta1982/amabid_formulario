@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
     ]);
 
     $this->call([
-        ScoringSeeder::class,
+        //ScoringSeeder::class,
     ]);
         /*User::factory()->create([
             'name' => 'Test User',

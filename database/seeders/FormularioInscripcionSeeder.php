@@ -87,6 +87,9 @@ class FormularioInscripcionSeeder extends Seeder
                 // Mejoras
                 'mejoras' => $faker->sentence(6),
                 'observaciones' => $faker->sentence(8),
+
+                //Configuracion
+                'configuracion' => $faker->randomElement(['Pareja con hijos', 'Pareja sin hijos', 'Adultos mayores', 'Hijo/a nieto/a sostén', 'En convivencia socioeconómica','Madre/padre jefe/a de hogar']),
             ]);
         }
     }

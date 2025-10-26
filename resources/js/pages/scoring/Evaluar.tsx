@@ -10,6 +10,7 @@ export default function Evaluar() {
   const [config, setConfig] = useState<ScoringConfig | null>(null);
   const [formulario, setFormulario] = useState<Formulario | null>(null);
   const [grupoFamiliar, setGrupoFamiliar] = useState<IntegranteFamiliar[]>([]);
+  const [criterios, setCriterios] = useState<{ label: string; puntos: number }[]>([]);
   //const { props } = usePage();
 
   type Familiar = {
@@ -71,6 +72,7 @@ export default function Evaluar() {
   );
 
   useEffect(() => {
+
     //console.log('piter');
     //axios.get('/formulario/22').then(res => setFormulario(res.data));
     axios.get(`/formulario/${formularioId}`).then(res => {
@@ -89,7 +91,7 @@ export default function Evaluar() {
         discapacidad: JSON.parse(data.B1 || '{}').si || 0
     };
 
-    console.log('Config transformada:', parsed);
+    //console.log('Config transformada:', parsed);
     setConfig(parsed);
     });
   }, []);
@@ -104,8 +106,8 @@ useEffect(() => {
   //console.log('formulario.configuracion:', formulario.configuracion);
   //console.log('config.configuracion:', formulario.configuracion);
 
-  total += config.configuracion[formulario.configuracion] || 1;
-console.log(total);
+  total += config.configuracion[formulario.configuracion] || 0;
+//console.log(total);
 
   //console.log(grupoFamiliar.length + 1);
 
@@ -118,7 +120,7 @@ console.log(total);
 
   //console.log(formularioId);
 
-console.log(total);
+console.log(f);
   const menores = grupoFamiliar.filter(p => p.edad < 6).length;
   if (menores >= 6) total += config.edades['6+'];
   else if (menores >= 4) total += config.edades['4-5'];
@@ -129,6 +131,41 @@ console.log(total);
   if (conDiscapacidad > 0) total += config.discapacidad;
 
   setPuntaje(total);
+
+
+  const criteriosCalculados = [];
+
+criteriosCalculados.push({
+  label: `Configuración: ${formulario.configuracion}`,
+  puntos: config.configuracion[formulario.configuracion] || 0
+});
+
+criteriosCalculados.push({
+  label: `Composición del hogar: ${integrantes} integrantes`,
+  puntos:
+    integrantes >= 7 ? config.composicionHogar['7+'] :
+    integrantes >= 5 ? config.composicionHogar['5-6'] :
+    integrantes >= 3 ? config.composicionHogar['3-4'] :
+    config.composicionHogar['2-2']
+});
+
+criteriosCalculados.push({
+  label: `Menores de 6 años: ${menores}`,
+  puntos:
+    menores >= 6 ? config.edades['6+'] :
+    menores >= 4 ? config.edades['4-5'] :
+    menores >= 2 ? config.edades['2-3'] :
+    config.edades['1']
+});
+
+if (conDiscapacidad > 0) {
+  criteriosCalculados.push({
+    label: `Personas con discapacidad en el grupo familiar`,
+    puntos: config.discapacidad
+  });
+}
+
+setCriterios(criteriosCalculados);
 }, [formulario, grupoFamiliar, config]);
 
 
@@ -138,7 +175,9 @@ console.log(total);
        <Head title="Evaluación de Scoring" />
         <div className="container mx-auto px-4 py-6">
             <div className="flex items-center justify-between mb-4">
-                      <h1 className="text-2xl font-bold text-blue-600">Postulante #  </h1>
+                      <h1 className="text-2xl font-bold text-blue-600">
+                        Postulante: {formulario?.postulante_nombre ?? 'Sin nombre'}
+                      </h1>
                       <div className="flex gap-2">
                         <Link href={route('postulantes.index')} className="px-3 py-2 rounded border text-blue-700 border-blue-600 hover:bg-blue-50">
                           Volver al listado
@@ -150,6 +189,24 @@ console.log(total);
             <p className="lead">Puntaje total: <strong>{puntaje} pts</strong></p>
             </div>
         </div>
+        <Card title="Datos del/la Postulante">
+        <GridBlock data={{
+            "C.I.": formulario?.postulante_ci,
+            "Edad": formulario?.postulante_edad,
+            "Estado civil": formulario?.postulante_estado_civil,
+            "Escolaridad": formulario?.postulante_escolaridad,
+            "Ingreso": formulario?.postulante_ingreso,
+        }} />
+        </Card>
+        <Card title="Detalle de Puntaje Asignado">
+  <ul className="list-disc pl-5">
+    {criterios.map((c, i) => (
+      <li key={i} className="mb-1">
+        <span>{c.label}</span>: <strong>{c.puntos} pts</strong>
+      </li>
+    ))}
+  </ul>
+</Card>
       </AppLayout>
     </>
   );
